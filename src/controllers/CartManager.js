@@ -39,17 +39,36 @@ export class CartManager {
     }
   }
 
-  async addCart(cart) {
-    const carts = await this.getCarts();
-    cart.id = await this.generateId();
-    carts.push(cart);
-    await this.saveCarts(carts);
+  async getProducts() {
+    try {
+      const content = await fs.promises.readFile(
+        "./src/assets/products.json",
+        this.format
+      );
+      return JSON.parse(content);
+    } catch (error) {
+      console.log("Error: Archivo de productos no encontrado");
+      return [];
+    }
   }
 
-  async getCartCount() {
+/*   async addCart() {
+    const products = await this.getProducts();
+    const cart = {
+      id: await this.generateId(),
+      products: products.map((product) => ({
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        thumbnail: product.thumbnail,
+      })),
+    };
     const carts = await this.getCarts();
-    return carts.length;
-  }
+    carts.push(cart);
+    await this.saveCarts(carts);
+    return cart;
+  } */
+  
 
   async addProductsToCart(cartId, productId) {
     let carts = await this.getCarts();
@@ -67,10 +86,17 @@ export class CartManager {
     if (existingProduct) {
       existingProduct.quantity++;
     } else {
-      cart.products.push({
-        product: productId,
-        quantity: 1,
-      });
+      const products = await this.getProducts();
+      const productToAdd = products.find((product) => product.id === productId);
+      if (productToAdd) {
+        cart.products.push({
+          title: productToAdd.title,
+          description: productToAdd.description,
+          price: productToAdd.price,
+          thumbnail: productToAdd.thumbnail,
+          quantity: 1,
+        });
+      }
     }
 
     carts[cartIndex] = cart;

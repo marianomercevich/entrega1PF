@@ -152,16 +152,5 @@
 		"stock": 10,
 		"category": "PECHERAS",
 		"thumbnail": "imagen"
-	},
-	{
-		"id": 15,
-		"title": "PECHERA",
-		"description": "PECHERA WIRTZ MILITAR",
-		"code": "pech06",
-		"price": 12500,
-		"status": true,
-		"stock": 10,
-		"category": "PECHERAS",
-		"thumbnail": "imagen"
 	}
 ]
