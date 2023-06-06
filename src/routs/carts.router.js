@@ -1,31 +1,60 @@
 import { Router } from 'express';
 import { CartManager } from "../controllers/CartManager.js";
-import { ProductManager } from '../controllers/ProductManager.js';
 
 const router = Router();
-
 const cartManager = new CartManager("./src/assets/carts.json");
 
-// Crear un nuevo carrito
-router.post('/', async (req, res) => {
-  const cartId = await generateCartId(); // Generar un ID único para el carrito
-  const newCart = {
-    id: cartId,
-    products: []
-  };
-
-  await cartManager.addCart(newCart);
-  res.json({ message: 'Carrito creado exitosamente!', cartId });
+router.post("/", async (req, res) => {
+  try {
+    const addCart = await cartManager.addCart();
+    res.json({ message: "Producto agregado al carrito", addCart });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Error en el servidor" });
+  }
 });
 
-// Función para generar un ID único para el carrito
-async function generateCartId() {
-  // Implementa aquí la lógica para generar un ID único
-  // Puedes utilizar un UUID o cualquier otra estrategia que prefieras
-  // Asegúrate de que el ID no se duplique en los carritos existentes
-  // y que se genere de manera automática
-  // Por simplicidad, aquí se utilizará un número incremental
-  return cartManager.getCartCount() + 1;
-}
+router.post("/:cid/products/id", async (req, res) => {
+  try {
+    const cartId = parseInt(req.params.cid);
+    const productId = parseInt(req.params.pid);
+
+    if (isNaN(productId) || productId <= 0) {
+      return res.status(400).json({ error: "Producto no válido" });
+    }
+
+    const cart = await cartManager.addProductsToCart(cartId, productId);
+
+    if (!cart) {
+      return res
+        .status(404)
+        .json({ error: `El carrito con el id ${cartId} no existe` });
+    }
+
+    res.json(cart);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Error en el servidor" });
+  }
+});
+
+router.get("/:cid", async (req, res) => {
+  try {
+    const cartId = parseInt(req.params.cid);
+
+    const cart = await cartManager.getCartsById(cartId);
+
+    if (!cart) {
+      return res
+        .status(404)
+        .json({ error: `El carrito con el id ${cartId} no existe` });
+    }
+
+    res.send(cart);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Error en el servidor" });
+  }
+});
 
 export default router;
